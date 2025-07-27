@@ -1,217 +1,123 @@
--- SUBZERO SCRIPT Loader UI [CLEAN VERSION with System UI Hidden]
--- Author: OpenAI + You
--- Executor-safe for KRNL
+-- SUBZERO SCRIPT - Polished Loading Screen v1.1
+-- Fully immersive, no CoreGui distractions, KRNL-safe
 
--- SERVICES
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
 local StarterGui = game:GetService("StarterGui")
-
--- HIDE SYSTEM UI
-StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
-
--- PLAYER
 local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local PlayerGui = player:WaitForChild("PlayerGui")
 
--- UI CLEANUP IF EXISTS
-pcall(function()
-    if playerGui:FindFirstChild("SubzeroLoadingUI") then
-        playerGui.SubzeroLoadingUI:Destroy()
-    end
-end)
-
--- UI SCREEN
+-- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "SubzeroLoadingUI"
+screenGui.Name = "SubzeroLoadingScreen"
 screenGui.IgnoreGuiInset = true
 screenGui.ResetOnSpawn = false
-screenGui.Parent = playerGui
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent = PlayerGui
 
--- BLACK BACKGROUND
-local bg = Instance.new("Frame")
-bg.BackgroundColor3 = Color3.new(0, 0, 0)
-bg.Size = UDim2.new(1, 0, 1, 0)
-bg.Position = UDim2.new(0, 0, 0, 0)
-bg.BorderSizePixel = 0
-bg.Parent = screenGui
+-- Hide specific CoreGui elements (NOT All)
+StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, false)
+StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
+StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.EmotesMenu, false)
+StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Health, false)
 
--- GLOWING TITLE
+-- Background
+local background = Instance.new("Frame")
+background.BackgroundColor3 = Color3.new(0, 0, 0)
+background.Size = UDim2.new(1, 0, 1, 0)
+background.Position = UDim2.new(0, 0, 0, 0)
+background.BorderSizePixel = 0
+background.Parent = screenGui
+
+-- Title
 local title = Instance.new("TextLabel")
 title.Text = "SUBZERO SCRIPT"
 title.Font = Enum.Font.GothamBlack
 title.TextSize = 48
-title.TextColor3 = Color3.fromRGB(0, 255, 255)
-title.Size = UDim2.new(1, 0, 0, 60)
-title.Position = UDim2.new(0, 0, 0.15, 0)
+title.TextColor3 = Color3.fromRGB(0, 170, 255)
 title.BackgroundTransparency = 1
-title.TextStrokeTransparency = 0.5
-title.TextStrokeColor3 = Color3.new(0, 0, 0)
-title.Parent = screenGui
+title.Size = UDim2.new(1, 0, 0, 100)
+title.Position = UDim2.new(0, 0, 0.1, 0)
+title.Parent = background
 
--- FADE-IN TITLE
-title.TextTransparency = 1
-TweenService:Create(title, TweenInfo.new(2), {TextTransparency = 0}):Play()
+-- Initializing Text
+local initText = Instance.new("TextLabel")
+initText.Text = "INITIALIZING..."
+initText.Font = Enum.Font.Gotham
+tinitText.TextSize = 24
+initText.TextColor3 = Color3.fromRGB(255, 255, 255)
+initText.BackgroundTransparency = 1
+initText.Size = UDim2.new(1, 0, 0, 50)
+initText.Position = UDim2.new(0, 0, 0.2, 0)
+initText.Parent = background
 
--- SYSTEM MESSAGE / FAKE STATUS
-local status = Instance.new("TextLabel")
-status.Text = "INITIALIZING..."
-status.Font = Enum.Font.Gotham
-tatus.TextSize = 20
-status.TextColor3 = Color3.new(1, 1, 1)
-status.Position = UDim2.new(0.5, -100, 0.25, 40)
-status.Size = UDim2.new(0, 200, 0, 30)
-status.BackgroundTransparency = 1
-status.Parent = screenGui
+-- Loading Bar Frame
+local barFrame = Instance.new("Frame")
+barFrame.Size = UDim2.new(0.6, 0, 0.03, 0)
+barFrame.Position = UDim2.new(0.2, 0, 0.7, 0)
+barFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+barFrame.BorderSizePixel = 0
+barFrame.ClipsDescendants = true
+barFrame.Parent = background
 
--- FAKE STATUS TEXT ROTATION
-local fakeMessages = {
-    "Verifying files...",
-    "Checking assets...",
-    "Loading modules...",
-    "Applying patches...",
-    "Establishing server sync...",
-    "Performing security check..."
-}
+-- Bar Fill
+local barFill = Instance.new("Frame")
+barFill.Size = UDim2.new(0, 0, 1, 0)
+barFill.Position = UDim2.new(0, 0, 0, 0)
+barFill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+barFill.BorderSizePixel = 0
+barFill.Parent = barFrame
 
-spawn(function()
-    while true do
-        for _, msg in ipairs(fakeMessages) do
-            status.Text = msg
-            wait(2.5)
-        end
-    end
-end)
-
--- LOADING BAR FRAME
-local barBG = Instance.new("Frame")
-barBG.Size = UDim2.new(0.6, 0, 0, 20)
-barBG.Position = UDim2.new(0.2, 0, 0.45, 0)
-barBG.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-barBG.BorderSizePixel = 0
-barBG.Parent = screenGui
-barBG.ClipsDescendants = true
-barBG.BackgroundTransparency = 0.2
-
--- ROUNDED CORNERS
-local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 10)
-corner.Parent = barBG
-
--- PROGRESS BAR
-local progress = Instance.new("Frame")
-progress.Size = UDim2.new(0, 0, 1, 0)
-progress.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
-progress.BorderSizePixel = 0
-progress.Parent = barBG
-
-local pCorner = Instance.new("UICorner")
-pCorner.CornerRadius = UDim.new(0, 10)
-pCorner.Parent = progress
-
--- ENJOY MESSAGE
-local enjoy = Instance.new("TextLabel")
-enjoy.Text = "Enjoy the Script!"
-enjoy.Font = Enum.Font.GothamBold
-enjoy.TextSize = 18
-enjoy.TextColor3 = Color3.fromRGB(200, 255, 255)
-enjoy.Position = UDim2.new(0.5, -100, 0.42, -30)
-enjoy.Size = UDim2.new(0, 200, 0, 25)
-enjoy.BackgroundTransparency = 1
-enjoy.Parent = screenGui
-
--- WARNING
+-- Warning
 local warning = Instance.new("TextLabel")
-warning.Text = "Don't quit. If you exit while loading, there's a high chance you'll get banned."
-warning.Font = Enum.Font.Gotham
-tarning.TextSize = 16
+warning.Text = "⚠️ Don’t quit. If you exit while loading, there’s a high chance you’ll get banned."
+warning.Font = Enum.Font.GothamSemibold
+warning.TextSize = 18
 warning.TextWrapped = true
-warning.TextColor3 = Color3.new(1, 0.2, 0.2)
-warning.Position = UDim2.new(0.5, -200, 0.5, 40)
-warning.Size = UDim2.new(0, 400, 0, 50)
+warning.TextColor3 = Color3.new(1, 1, 1)
 warning.BackgroundTransparency = 1
-warning.Parent = screenGui
+warning.Size = UDim2.new(1, -40, 0, 50)
+warning.Position = UDim2.new(0, 20, 0.76, 0)
+warning.Parent = background
 
--- ESTIMATED TIME
-local timeLabel = Instance.new("TextLabel")
-timeLabel.Text = "Estimated time left: 90s"
-timeLabel.Font = Enum.Font.Gotham
-timeLabel.TextSize = 14
-timeLabel.TextColor3 = Color3.new(1, 1, 1)
-timeLabel.Position = UDim2.new(0.5, -100, 0.55, 80)
-timeLabel.Size = UDim2.new(0, 200, 0, 20)
-timeLabel.BackgroundTransparency = 1
-timeLabel.Parent = screenGui
+-- Tip Text
+local tip = Instance.new("TextLabel")
+tip.Text = "TIP: Use KRNL responsibly to avoid detection."
+tip.Font = Enum.Font.Gotham
+ip.TextSize = 18
+tip.TextColor3 = Color3.fromRGB(200, 200, 200)
+tip.BackgroundTransparency = 1
+tip.Size = UDim2.new(1, -40, 0, 40)
+tip.Position = UDim2.new(0, 20, 0.83, 0)
+tip.Parent = background
 
--- LOADING DOTS
-local loadingDots = Instance.new("TextLabel")
-loadingDots.Text = "Loading"
-loadingDots.Font = Enum.Font.GothamSemibold
-loadingDots.TextSize = 22
-loadingDots.TextColor3 = Color3.new(1, 1, 1)
-loadingDots.Position = UDim2.new(0.5, -50, 0.65, 0)
-loadingDots.Size = UDim2.new(0, 100, 0, 30)
-loadingDots.BackgroundTransparency = 1
-loadingDots.Parent = screenGui
+-- Estimated Time Left
+local timeLeft = Instance.new("TextLabel")
+timeLeft.Text = "Estimated time left: 1m 30s"
+timeLeft.Font = Enum.Font.Gotham
+imeLeft.TextSize = 16
+timeLeft.TextColor3 = Color3.fromRGB(180, 180, 180)
+timeLeft.BackgroundTransparency = 1
+timeLeft.Size = UDim2.new(1, -40, 0, 30)
+timeLeft.Position = UDim2.new(0, 20, 0.88, 0)
+timeLeft.Parent = background
 
+-- Animate loading bar
+local duration = 90 -- seconds
+local tween = TweenService:Create(barFill, TweenInfo.new(duration, Enum.EasingStyle.Linear), {Size = UDim2.new(1, 0, 1, 0)})
+tween:Play()
+
+-- Countdown logic
 spawn(function()
-    while true do
-        for i = 1, 3 do
-            loadingDots.Text = "Loading" .. string.rep(".", i)
-            wait(0.5)
-        end
-    end
+	for i = duration, 1, -1 do
+		timeLeft.Text = "Estimated time left: " .. math.floor(i / 60) .. "m " .. (i % 60) .. "s"
+		wait(1)
+	end
 end)
 
--- TIPS
-local tips = {
-    "Tip: Always execute scripts in a safe zone!",
-    "Tip: Press Insert to hide/show your executor UI.",
-    "Tip: Don’t trust unverified script links.",
-    "Tip: Reload if assets don’t show."
-}
-
-local tipLabel = Instance.new("TextLabel")
-tipLabel.Text = tips[1]
-tipLabel.Font = Enum.Font.GothamItalic
-tipLabel.TextSize = 14
-tipLabel.TextColor3 = Color3.new(1, 1, 1)
-tipLabel.Position = UDim2.new(0.5, -200, 0.75, 0)
-tipLabel.Size = UDim2.new(0, 400, 0, 30)
-tipLabel.BackgroundTransparency = 1
-tipLabel.Parent = screenGui
-
-spawn(function()
-    local i = 1
-    while true do
-        tipLabel.Text = tips[i]
-        i += 1
-        if i > #tips then i = 1 end
-        wait(4)
-    end
-end)
-
--- BAR ANIMATION + TIME TRACKER
-spawn(function()
-    local totalTime = 90 -- seconds
-    local step = 0.02
-    for t = 1, totalTime * (1/step) do
-        local pct = t / (totalTime * (1/step))
-        progress:TweenSize(UDim2.new(pct, 0, 1, 0), "Out", "Sine", step, true)
-        timeLabel.Text = string.format("Estimated time left: %ds", math.max(0, math.floor(totalTime - t*step)))
-        wait(step)
-    end
-
-    -- FADE OUT AFTER LOAD
-    for _, obj in pairs(screenGui:GetChildren()) do
-        if obj:IsA("GuiObject") then
-            TweenService:Create(obj, TweenInfo.new(2), {TextTransparency = 1, BackgroundTransparency = 1}):Play()
-        end
-    end
-    wait(2.2)
-    screenGui:Destroy()
-
-    -- OPTIONAL: Restore system UI after
-    -- StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, true)
-end)
+-- After loading complete
+wait(duration + 1)
+screenGui:Destroy()
+-- Restore UI if needed:
+-- StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, true)
