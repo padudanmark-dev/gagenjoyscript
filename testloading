@@ -1,0 +1,78 @@
+-- Destroy existing if any
+pcall(function() game.CoreGui:FindFirstChild("CustomLoadingUI"):Destroy() end)
+
+-- Create UI
+local gui = Instance.new("ScreenGui")
+gui.Name = "CustomLoadingUI"
+gui.IgnoreGuiInset = true
+gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+gui.DisplayOrder = 1000 -- very high to ensure it's on top
+gui.Parent = game.CoreGui
+
+-- Block user input
+local UIS = game:GetService("UserInputService")
+local ContextActionService = game:GetService("ContextActionService")
+ContextActionService:BindAction("DisableAllInput", function() return Enum.ContextActionResult.Sink end, false, unpack(Enum.UserInputType:GetEnumItems()))
+UIS.ModalEnabled = true
+
+-- Fullscreen black background
+local bg = Instance.new("Frame")
+bg.Size = UDim2.new(1, 0, 1, 0)
+bg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+bg.BorderSizePixel = 0
+bg.Parent = gui
+
+-- Loading text
+local textLabel = Instance.new("TextLabel")
+textLabel.Text = "Loading..."
+textLabel.Font = Enum.Font.GothamBold
+textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+textLabel.TextSize = 48
+textLabel.BackgroundTransparency = 1
+textLabel.Size = UDim2.new(1, 0, 0, 60)
+textLabel.Position = UDim2.new(0, 0, 0.35, 0)
+textLabel.Parent = bg
+
+-- Loading bar background
+local barBg = Instance.new("Frame")
+barBg.Size = UDim2.new(0.5, 0, 0, 30)
+barBg.Position = UDim2.new(0.25, 0, 0.45, 0)
+barBg.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+barBg.BorderSizePixel = 0
+barBg.Parent = bg
+barBg.ClipsDescendants = true
+barBg:TweenSize(barBg.Size, "Out", "Quad", 0.5, true)
+
+-- Loading bar fill
+local barFill = Instance.new("Frame")
+barFill.Size = UDim2.new(0, 0, 1, 0)
+barFill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+barFill.BorderSizePixel = 0
+barFill.Parent = barBg
+
+-- Warning message
+local warning = Instance.new("TextLabel")
+warning.Text = "⚠️ Don’t quit. If you exit while loading, there’s a high chance you’ll get banned."
+warning.Font = Enum.Font.Gotham
+warning.TextColor3 = Color3.fromRGB(255, 80, 80)
+warning.TextSize = 18
+warning.BackgroundTransparency = 1
+warning.Size = UDim2.new(1, -40, 0, 40)
+warning.Position = UDim2.new(0, 20, 0.55, 0)
+warning.TextWrapped = true
+warning.TextXAlignment = Enum.TextXAlignment.Center
+warning.Parent = bg
+
+-- Smooth loading animation
+for i = 0, 100 do
+    barFill:TweenSize(UDim2.new(i / 100, 0, 1, 0), "Out", "Sine", 0.05, true)
+    textLabel.Text = "Loading... " .. i .. "%"
+    wait(0.05) -- total ~5 seconds
+end
+
+-- Clean up after done
+wait(0.5)
+gui:Destroy()
+ContextActionService:UnbindAction("DisableAllInput")
+UIS.ModalEnabled = false
