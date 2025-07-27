@@ -1,15 +1,15 @@
--- Destroy any existing loading screen
+-- Clean up old UI
 pcall(function() game.CoreGui:FindFirstChild("CustomLoadingUI"):Destroy() end)
 
 -- Services
 local UIS = game:GetService("UserInputService")
 local CAS = game:GetService("ContextActionService")
 
--- Disable user input
+-- Disable all input
 CAS:BindAction("DisableAllInput", function() return Enum.ContextActionResult.Sink end, false, unpack(Enum.UserInputType:GetEnumItems()))
 UIS.ModalEnabled = true
 
--- Main UI
+-- Main ScreenGui
 local gui = Instance.new("ScreenGui")
 gui.Name = "CustomLoadingUI"
 gui.IgnoreGuiInset = true
@@ -18,29 +18,85 @@ gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 gui.DisplayOrder = 1000
 gui.Parent = game.CoreGui
 
--- Background
+-- Black background
 local bg = Instance.new("Frame")
 bg.Size = UDim2.new(1, 0, 1, 0)
+bg.Position = UDim2.new(0, 0, 0, 0)
 bg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 bg.BorderSizePixel = 0
 bg.Parent = gui
 
--- “Enjoy the Script!” Text
-local welcomeText = Instance.new("TextLabel")
-welcomeText.Text = "🎉 Enjoy the Script!"
-welcomeText.Font = Enum.Font.GothamSemibold
-welcomeText.TextColor3 = Color3.fromRGB(0, 200, 255)
-welcomeText.TextSize = 32
-welcomeText.BackgroundTransparency = 1
-welcomeText.Size = UDim2.new(1, 0, 0, 40)
-welcomeText.Position = UDim2.new(0, 0, 0.35, 0)
-welcomeText.Parent = bg
+-- "Enjoy the Script!" text
+local enjoyLabel = Instance.new("TextLabel")
+enjoyLabel.Text = "🎉 Enjoy the Script!"
+enjoyLabel.Font = Enum.Font.GothamSemibold
+enjoyLabel.TextColor3 = Color3.fromRGB(0, 200, 255)
+enjoyLabel.TextSize = 36
+enjoyLabel.BackgroundTransparency = 1
+enjoyLabel.Size = UDim2.new(1, 0, 0, 50)
+enjoyLabel.Position = UDim2.new(0, 0, 0.30, 0)
+enjoyLabel.Parent = bg
 
 -- Loading bar background
 local barBg = Instance.new("Frame")
-barBg.Size = UDim2.new(0.5, 0, 0, 30)
-barBg.Position = UDim2.new(0.25, 0, 0.45, 0)
+barBg.Size = UDim2.new(0.5, 0, 0, 28)
+barBg.Position = UDim2.new(0.25, 0, 0.40, 0)
 barBg.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 barBg.BorderSizePixel = 0
 barBg.Parent = bg
-barBg.ClipsDescendant
+barBg.ClipsDescendants = true
+
+local barBgCorner = Instance.new("UICorner", barBg)
+barBgCorner.CornerRadius = UDim.new(0, 14)
+
+-- Loading bar fill
+local barFill = Instance.new("Frame")
+barFill.Size = UDim2.new(0, 0, 1, 0)
+barFill.Position = UDim2.new(0, 0, 0, 0)
+barFill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+barFill.BorderSizePixel = 0
+barFill.Parent = barBg
+
+local barFillCorner = Instance.new("UICorner", barFill)
+barFillCorner.CornerRadius = UDim.new(0, 14)
+
+-- Percent text
+local percentText = Instance.new("TextLabel")
+percentText.Text = "Loading... 0%"
+percentText.Font = Enum.Font.GothamBold
+percentText.TextColor3 = Color3.fromRGB(255, 255, 255)
+percentText.TextSize = 26
+percentText.BackgroundTransparency = 1
+percentText.Size = UDim2.new(1, 0, 0, 40)
+percentText.Position = UDim2.new(0, 0, 0.46, 0)
+percentText.Parent = bg
+
+-- Warning message
+local warning = Instance.new("TextLabel")
+warning.Text = "⚠️ Don’t quit. If you exit while loading, there’s a high chance you’ll get banned."
+warning.Font = Enum.Font.Gotham
+warning.TextColor3 = Color3.fromRGB(255, 85, 85)
+warning.TextSize = 18
+warning.BackgroundTransparency = 1
+warning.Size = UDim2.new(0.7, 0, 0, 60)
+warning.Position = UDim2.new(0.15, 0, 0.53, 0)
+warning.TextWrapped = true
+warning.TextXAlignment = Enum.TextXAlignment.Center
+warning.TextYAlignment = Enum.TextYAlignment.Center
+warning.Parent = bg
+
+-- Smooth loading animation (90 seconds)
+local duration = 90 -- seconds
+local steps = 100
+for i = 0, steps do
+	local progress = i / steps
+	barFill:TweenSize(UDim2.new(progress, 0, 1, 0), "Out", "Sine", 0.3, true)
+	percentText.Text = string.format("Loading... %d%%", math.floor(progress * 100))
+	wait(duration / steps)
+end
+
+-- Clean up
+wait(0.5)
+gui:Destroy()
+CAS:UnbindAction("DisableAllInput")
+UIS.ModalEnabled = false
