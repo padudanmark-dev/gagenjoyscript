@@ -1,0 +1,108 @@
+-- // PET SPAWNER UI AFTER LOADER // --
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Destroy old UI if exists
+if playerGui:FindFirstChild("SUBZERO_PetSpawner") then
+    playerGui.SUBZERO_PetSpawner:Destroy()
+end
+
+-- UI Container
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SUBZERO_PetSpawner"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = playerGui
+
+-- Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0.4, 0, 0.6, 0)
+mainFrame.Position = UDim2.new(0.3, 0, 0.2, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BorderSizePixel = 0
+mainFrame.BackgroundTransparency = 0.1
+mainFrame.Parent = screenGui
+
+local uiCorner = Instance.new("UICorner", mainFrame)
+uiCorner.CornerRadius = UDim.new(0, 12)
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0.1, 0)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.Text = "Pet Spawner"
+title.Font = Enum.Font.GothamBold
+title.TextColor3 = Color3.fromRGB(0, 255, 255)
+title.TextSize = 26
+title.BackgroundTransparency = 1
+title.Parent = mainFrame
+
+-- Age Input
+local ageBox = Instance.new("TextBox")
+ageBox.PlaceholderText = "Age (e.g., 3)"
+ageBox.Size = UDim2.new(0.45, -5, 0.1, 0)
+ageBox.Position = UDim2.new(0.05, 0, 0.15, 0)
+ageBox.Font = Enum.Font.Gotham
+tageBox.TextColor3 = Color3.new(1, 1, 1)
+ageBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+ageBox.TextSize = 18
+ageBox.Parent = mainFrame
+Instance.new("UICorner", ageBox)
+
+-- Weight Input
+local weightBox = Instance.new("TextBox")
+weightBox.PlaceholderText = "Weight (kg)"
+weightBox.Size = UDim2.new(0.45, -5, 0.1, 0)
+weightBox.Position = UDim2.new(0.5, 5, 0.15, 0)
+weightBox.Font = Enum.Font.Gotham
+weightBox.TextColor3 = Color3.new(1, 1, 1)
+weightBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+weightBox.TextSize = 18
+weightBox.Parent = mainFrame
+Instance.new("UICorner", weightBox)
+
+-- Sample Pet List
+local pets = {"Spinosaurus", "Mimic", "T-Rex", "Butterfly", "Raccoon"}
+
+for i, petName in ipairs(pets) do
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0.9, 0, 0.08, 0)
+    button.Position = UDim2.new(0.05, 0, 0.28 + (i * 0.09), 0)
+    button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.Font = Enum.Font.GothamSemibold
+    button.Text = "Spawn " .. petName
+    button.TextSize = 18
+    button.Parent = mainFrame
+    Instance.new("UICorner", button)
+
+    button.MouseButton1Click:Connect(function()
+        local age = tonumber(ageBox.Text)
+        local weight = tonumber(weightBox.Text)
+
+        if not age or not weight then
+            warn("Enter valid age and weight")
+            return
+        end
+
+        local fullName = string.format("%s [%d KG] [Age %d]", petName, weight, age)
+
+        -- Replace below with your actual spawning logic
+        print("Spawning pet:", fullName)
+
+        -- Add to fake inventory or spawn model (placeholder)
+        local petLabel = Instance.new("TextLabel")
+        petLabel.Size = UDim2.new(0.9, 0, 0.05, 0)
+        petLabel.Position = UDim2.new(0.05, 0, 0.8 + i*0.05, 0)
+        petLabel.Text = fullName
+        petLabel.Font = Enum.Font.Gotham
+        petLabel.TextColor3 = Color3.fromRGB(0, 255, 180)
+        petLabel.BackgroundTransparency = 1
+        petLabel.TextScaled = true
+        petLabel.Parent = mainFrame
+    end)
+end
