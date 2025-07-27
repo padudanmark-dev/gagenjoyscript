@@ -1,26 +1,17 @@
--- SUBZERO SCRIPT - Polished Loading Screen v1.1
--- Fully immersive, no CoreGui distractions, KRNL-safe
+-- SUBZERO SCRIPT - Polished Loading Screen v1.0 (Restored Version)
+-- KRNL-Compatible, Fullscreen, Clean Design
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-local StarterGui = game:GetService("StarterGui")
 local player = Players.LocalPlayer
 local PlayerGui = player:WaitForChild("PlayerGui")
 
--- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "SubzeroLoadingScreen"
 screenGui.IgnoreGuiInset = true
 screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = PlayerGui
-
--- Hide specific CoreGui elements (NOT All)
-StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, false)
-StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
-StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
-StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.EmotesMenu, false)
-StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Health, false)
 
 -- Background
 local background = Instance.new("Frame")
@@ -45,7 +36,7 @@ title.Parent = background
 local initText = Instance.new("TextLabel")
 initText.Text = "INITIALIZING..."
 initText.Font = Enum.Font.Gotham
-tinitText.TextSize = 24
+initText.TextSize = 24
 initText.TextColor3 = Color3.fromRGB(255, 255, 255)
 initText.BackgroundTransparency = 1
 initText.Size = UDim2.new(1, 0, 0, 50)
@@ -96,7 +87,7 @@ tip.Parent = background
 local timeLeft = Instance.new("TextLabel")
 timeLeft.Text = "Estimated time left: 1m 30s"
 timeLeft.Font = Enum.Font.Gotham
-imeLeft.TextSize = 16
+timeLeft.TextSize = 16
 timeLeft.TextColor3 = Color3.fromRGB(180, 180, 180)
 timeLeft.BackgroundTransparency = 1
 timeLeft.Size = UDim2.new(1, -40, 0, 30)
@@ -119,5 +110,3 @@ end)
 -- After loading complete
 wait(duration + 1)
 screenGui:Destroy()
--- Restore UI if needed:
--- StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, true)
