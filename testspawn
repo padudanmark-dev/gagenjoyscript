@@ -1,20 +1,17 @@
--- SUBZERO SCRIPT + PET SPAWNER UI
--- Combined loader and pet system for KRNL
+-- SUBZERO LOADER + EGG PET RANDOMIZER UI
+-- Full-screen loading UI then pet egg gacha system
 
--- // SERVICES // --
+-- // SERVICES
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Clear existing UIs
+-- Clear old UIs
 if playerGui:FindFirstChild("SUBZERO_Loader") then playerGui.SUBZERO_Loader:Destroy() end
-if playerGui:FindFirstChild("PetSpawnerUI") then playerGui.PetSpawnerUI:Destroy() end
+if playerGui:FindFirstChild("EggRandomizerUI") then playerGui.EggRandomizerUI:Destroy() end
 
--- // LOADING SCREEN UI // --
+-- // LOADING UI
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "SUBZERO_Loader"
 screenGui.IgnoreGuiInset = true
@@ -41,7 +38,7 @@ local function createLabel(text, posY, sizeY, size, color, font)
 end
 
 local title = createLabel("SUBZERO SCRIPT", 0.1, 0.1, 48, Color3.fromRGB(0, 255, 255), Enum.Font.GothamBlack)
-local status = createLabel("Initializing...", 0.2, 0.05, 20, Color3.fromRGB(255, 255, 255), Enum.Font.Code)
+local status = createLabel("Initializing...", 0.2, 0.05, 20, nil, Enum.Font.Code)
 local loadingText = createLabel("Loading", 0.3, 0.05)
 local timeText = createLabel("Estimated Time Left: 1:30", 0.55, 0.05, 20)
 local warning = createLabel("⚠️ Don’t quit. You may get banned.", 0.6, 0.05, 18, Color3.fromRGB(255, 80, 80))
@@ -61,7 +58,7 @@ bar.BackgroundColor3 = Color3.fromRGB(0, 255, 180)
 bar.BorderSizePixel = 0
 bar.Parent = barBG
 
--- Animations
+-- Dot animation
 coroutine.wrap(function()
     while screenGui.Parent do
         for i = 1, 3 do
@@ -82,18 +79,16 @@ coroutine.wrap(function()
     while true do for _, t in ipairs(tips) do tip.Text = t wait(5) end end
 end)()
 
--- Progress animation
+-- Progress bar
 local totalTime = 90
-local steps = 90
-local stepTime = totalTime / steps
-for i = 1, steps do
-    local percent = i / steps
-    TweenService:Create(bar, TweenInfo.new(stepTime), {
+for i = 1, totalTime do
+    local percent = i / totalTime
+    TweenService:Create(bar, TweenInfo.new(1), {
         Size = UDim2.new(percent, 0, 1, 0)
     }):Play()
-    local secondsLeft = math.floor(totalTime - i * stepTime)
+    local secondsLeft = totalTime - i
     timeText.Text = string.format("Estimated Time Left: %d:%02d", secondsLeft/60, secondsLeft%60)
-    wait(stepTime)
+    wait(1)
 end
 
 -- Fade out
@@ -103,57 +98,109 @@ fadeFrame.BackgroundColor3 = Color3.new(0, 0, 0)
 fadeFrame.BackgroundTransparency = 1
 fadeFrame.ZIndex = 10
 fadeFrame.Parent = mainFrame
-
 TweenService:Create(fadeFrame, TweenInfo.new(2), {BackgroundTransparency = 0}):Play()
 wait(2)
 screenGui:Destroy()
 
--- // PET SPAWNER UI // --
-local spawnerGui = Instance.new("ScreenGui")
-spawnerGui.Name = "PetSpawnerUI"
-spawnerGui.ResetOnSpawn = false
-spawnerGui.IgnoreGuiInset = true
-spawnerGui.Parent = playerGui
+-- // EGG RANDOMIZER UI // --
+local eggGui = Instance.new("ScreenGui")
+eggGui.Name = "EggRandomizerUI"
+eggGui.IgnoreGuiInset = true
+eggGui.ResetOnSpawn = false
+eggGui.Parent = playerGui
 
-local spawnerFrame = Instance.new("Frame")
-spawnerFrame.Size = UDim2.new(0.4, 0, 0.6, 0)
-spawnerFrame.Position = UDim2.new(0.3, 0, 0.2, 0)
-spawnerFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-spawnerFrame.BorderSizePixel = 0
-spawnerFrame.Parent = spawnerGui
+local eggFrame = Instance.new("Frame")
+eggFrame.Size = UDim2.new(0.4, 0, 0.5, 0)
+eggFrame.Position = UDim2.new(0.3, 0, 0.25, 0)
+eggFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+eggFrame.BorderSizePixel = 0
+eggFrame.Parent = eggGui
+Instance.new("UICorner", eggFrame)
 
-local uiList = Instance.new("UIListLayout")
-uiList.Padding = UDim.new(0, 6)
-uiList.Parent = spawnerFrame
+-- Inputs
+local ageBox = Instance.new("TextBox")
+ageBox.PlaceholderText = "Age (default random)"
+ageBox.Size = UDim2.new(0.45, -5, 0.1, 0)
+ageBox.Position = UDim2.new(0.05, 0, 0.1, 0)
+ageBox.Font = Enum.Font.Gotham
+ageBox.TextColor3 = Color3.new(1, 1, 1)
+ageBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+ageBox.TextSize = 18
+ageBox.Parent = eggFrame
+Instance.new("UICorner", ageBox)
+
+local weightBox = ageBox:Clone()
+weightBox.PlaceholderText = "Weight (kg)"
+weightBox.Position = UDim2.new(0.5, 5, 0.1, 0)
+weightBox.Parent = eggFrame
+
+-- Inventory & Result
+local result = Instance.new("TextLabel")
+result.Size = UDim2.new(1, 0, 0.15, 0)
+result.Position = UDim2.new(0, 0, 0.25, 0)
+result.Text = "Click the egg to hatch!"
+result.Font = Enum.Font.GothamBold
+result.TextColor3 = Color3.fromRGB(0, 255, 180)
+result.TextSize = 22
+result.BackgroundTransparency = 1
+result.Parent = eggFrame
+
+local inventoryList = Instance.new("TextLabel")
+inventoryList.Size = UDim2.new(1, -10, 0.4, 0)
+inventoryList.Position = UDim2.new(0, 5, 0.4, 0)
+inventoryList.Text = "Inventory:\n"
+inventoryList.Font = Enum.Font.Code
+inventoryList.TextXAlignment = Enum.TextXAlignment.Left
+inventoryList.TextYAlignment = Enum.TextYAlignment.Top
+inventoryList.TextColor3 = Color3.new(1, 1, 1)
+inventoryList.TextSize = 16
+inventoryList.BackgroundTransparency = 1
+inventoryList.TextWrapped = true
+inventoryList.TextScaled = false
+inventoryList.Parent = eggFrame
+
+-- Egg Button
+local pets = {"Mimic", "Spinosaurus", "Raccoon", "T-Rex", "Butterfly"}
+local eggBtn = Instance.new("TextButton")
+eggBtn.Size = UDim2.new(0.9, 0, 0.12, 0)
+eggBtn.Position = UDim2.new(0.05, 0, 0.85, 0)\neggBtn.Text = "🎁 Hatch Egg"
+eggBtn.Font = Enum.Font.GothamSemibold
+eggBtn.TextColor3 = Color3.new(1, 1, 1)
+eggBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+eggBtn.TextSize = 20
+eggBtn.Parent = eggFrame
+Instance.new("UICorner", eggBtn)
 
 local inventory = {}
 
-local function addPet(petName)
-    local weight = math.random(10, 200)
-    local age = math.random(1, 5)
-    local entry = string.format("%s [%d KG] [Age %d]", petName, weight, age)
-    table.insert(inventory, entry)
-    print("Spawned:", entry)
-end
+eggBtn.MouseButton1Click:Connect(function()
+    local pet = pets[math.random(1, #pets)]
+    local age = tonumber(ageBox.Text) or math.random(1, 5)
+    local weight = tonumber(weightBox.Text) or math.random(30, 150)
+    local display = string.format("%s [%d KG] [Age %d]", pet, weight, age)
 
-local pets = {"Spinosaurus", "Mimic", "Butterfly", "T-Rex"}
-for _, name in ipairs(pets) do
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 0, 40)
-    btn.Text = "Spawn " .. name
-    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.Parent = spawnerFrame
-    btn.MouseButton1Click:Connect(function()
-        addPet(name)
-        -- Placeholder spawn (replace with actual model logic)
-        local model = Instance.new("Part")
-        model.Name = name
-        model.Size = Vector3.new(4, 4, 4)
-        model.Position = player.Character and player.Character.HumanoidRootPart.Position + Vector3.new(0, 5, 0) or Vector3.new(0, 10, 0)
-        model.Anchored = false
-        model.Parent = workspace
-    end)
-end
+    table.insert(inventory, display)
+    result.Text = "🎉 You got: " .. display
 
-print("Pet Spawner Ready.")
+    local invText = "Inventory:\n"
+    for _, p in ipairs(inventory) do invText = invText .. p .. "\n" end
+    inventoryList.Text = invText
+end)
+
+-- Toggle button (top left)
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 100, 0, 30)
+toggleBtn.Position = UDim2.new(0, 10, 0, 10)
+toggleBtn.Text = "🧺 Toggle UI"
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 16
+toggleBtn.TextColor3 = Color3.new(1,1,1)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+toggleBtn.Parent = eggGui
+Instance.new("UICorner", toggleBtn)
+
+local visible = true
+toggleBtn.MouseButton1Click:Connect(function()
+    visible = not visible
+    eggFrame.Visible = visible
+end)
